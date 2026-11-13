@@ -1,0 +1,104 @@
+warning: in the working copy of 'pom.xml', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/pom.xml b/pom.xml[m
+[1mindex 09e47dd..0dcb074 100644[m
+[1m--- a/pom.xml[m
+[1m+++ b/pom.xml[m
+[36m@@ -78,6 +78,27 @@[m
+             <scope>test</scope>[m
+         </dependency>[m
+ [m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>io.jsonwebtoken</groupId>[m
+[32m+[m[32m            <artifactId>jjwt-api</artifactId>[m
+[32m+[m[32m            <version>0.12.5</version>[m
+[32m+[m[32m        </dependency>[m
+[32m+[m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>io.jsonwebtoken</groupId>[m
+[32m+[m[32m            <artifactId>jjwt-impl</artifactId>[m
+[32m+[m[32m            <version>0.12.5</version>[m
+[32m+[m[32m            <scope>runtime</scope>[m
+[32m+[m[32m        </dependency>[m
+[32m+[m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>io.jsonwebtoken</groupId>[m
+[32m+[m[32m            <artifactId>jjwt-jackson</artifactId>[m
+[32m+[m[32m            <version>0.12.5</version>[m
+[32m+[m[32m            <scope>runtime</scope>[m
+[32m+[m[32m        </dependency>[m
+[32m+[m
+[32m+[m
+     </dependencies>[m
+ [m
+     <build>[m
+[1mdiff --git a/src/main/java/com/prem/config/SecurityConfig.java b/src/main/java/com/prem/config/SecurityConfig.java[m
+[1mindex a07364c..fd006f1 100644[m
+[1m--- a/src/main/java/com/prem/config/SecurityConfig.java[m
+[1m+++ b/src/main/java/com/prem/config/SecurityConfig.java[m
+[36m@@ -11,8 +11,10 @@[m [mimport org.springframework.security.config.Customizer;[m
+ import org.springframework.security.config.annotation.web.builders.HttpSecurity;[m
+ import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;[m
+ import org.springframework.security.config.http.SessionCreationPolicy;[m
+[31m-import org.springframework.security.crypto.password.NoOpPasswordEncoder;[m
+[32m+[m[32mimport org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;[m
+ import org.springframework.security.web.SecurityFilterChain;[m
+[32m+[m[32mimport org.springframework.security.authentication.AuthenticationManager;[m
+[32m+[m[32mimport org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;[m
+ [m
+ @Configuration[m
+ @EnableWebSecurity[m
+[36m@@ -26,8 +28,10 @@[m [mpublic class SecurityConfig {[m
+ [m
+         return http[m
+                 .csrf(csrf -> csrf.disable())[m
+[31m-                .authorizeHttpRequests(auth ->[m
+[31m-                        auth.anyRequest().authenticated())[m
+[32m+[m[32m                .authorizeHttpRequests(auth -> auth[m
+[32m+[m[32m                        .requestMatchers("/register", "/login").permitAll()[m
+[32m+[m[32m                        .anyRequest().authenticated()[m
+[32m+[m[32m                )[m
+                 .httpBasic(Customizer.withDefaults())[m
+                 .sessionManagement(session ->[m
+                         session.sessionCreationPolicy([m
+[36m@@ -43,10 +47,17 @@[m [mpublic class SecurityConfig {[m
+         DaoAuthenticationProvider provider =[m
+                 new DaoAuthenticationProvider();[m
+ [m
+[31m-        provider.setUserDetailsService(userDetailsService);[m
+         provider.setPasswordEncoder([m
+[31m-                NoOpPasswordEncoder.getInstance());[m
+[32m+[m[32m                new BCryptPasswordEncoder(12));[m
+[32m+[m
+[32m+[m[32m        provider.setUserDetailsService(userDetailsService);[m
+ [m
+         return provider;[m
+     }[m
+[32m+[m[32m    @Bean[m
+[32m+[m[32m    public AuthenticationManager authenticationManager([m
+[32m+[m[32m            AuthenticationConfiguration config) throws Exception {[m
+[32m+[m
+[32m+[m[32m        return config.getAuthenticationManager();[m
+[32m+[m[32m    }[m
+ }[m
+[1mdiff --git a/src/main/java/com/prem/controller/HelloController.java b/src/main/java/com/prem/controller/HelloController.java[m
+[1mindex ec965b2..7737a67 100644[m
+[1m--- a/src/main/java/com/prem/controller/HelloController.java[m
+[1m+++ b/src/main/java/com/prem/controller/HelloController.java[m
+[36m@@ -1,5 +1,5 @@[m
+ [m
+[31m-package com.prem;[m
+[32m+[m[32mpackage com.prem.controller;[m
+ [m
+ import org.springframework.web.bind.annotation.GetMapping;[m
+ import org.springframework.web.bind.annotation.RestController;[m
+[1mdiff --git a/src/main/java/com/prem/controller/LoginController.java b/src/main/java/com/prem/controller/LoginController.java[m
+[1mindex 85c6253..69d4635 100644[m
+[1m--- a/src/main/java/com/prem/controller/LoginController.java[m
+[1m+++ b/src/main/java/com/prem/controller/LoginController.java[m
+[36m@@ -1,5 +1,5 @@[m
+ [m
+[31m-package com.prem;[m
+[32m+[m[32mpackage com.prem.controller;[m
+ [m
+ import org.springframework.stereotype.Controller;[m
+ import org.springframework.web.bind.annotation.GetMapping;[m
