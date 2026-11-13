@@ -1,4 +1,4 @@
-package CSRF_TOKEN;
+package com.prem.csrf_token;
 
 
 import jakarta.servlet.http.HttpServletRequest;

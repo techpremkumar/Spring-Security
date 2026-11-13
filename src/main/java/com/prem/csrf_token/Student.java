@@ -1,4 +1,4 @@
-package CSRF_TOKEN;
+package com.prem.csrf_token;
 
 public class Student { private int id;
     private String name;
