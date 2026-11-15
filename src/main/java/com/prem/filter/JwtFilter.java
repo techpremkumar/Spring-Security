@@ -2,8 +2,10 @@
 package com.prem.filter;
 
 import com.prem.service.JWTService;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,6 +33,16 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+    // Skip JWT processing during Google OAuth2 authentication
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getServletPath();
+
+        return path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/");
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -40,37 +52,46 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        String token = null;
-        String username = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtService.extractUserName(token);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        if (username != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+        String token = authHeader.substring(7);
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(username);
+        try {
 
-            if (jwtService.validateToken(token, userDetails)) {
+            String username = jwtService.extractUserName(token);
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(username);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authToken);
+                if (jwtService.validateToken(token, userDetails)) {
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
+                }
             }
+
+        } catch (Exception e) {
+
+            // Invalid or expired token: do not authenticate the request
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

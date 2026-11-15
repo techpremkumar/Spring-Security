@@ -16,6 +16,7 @@ import java.util.Map;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.function.Function;
+import org.springframework.beans.factory.ObjectProvider;
 
 @Service
 public class JWTService {

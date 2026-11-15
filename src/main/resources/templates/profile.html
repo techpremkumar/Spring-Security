@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Prem Site</title>
+</head>
+<body>
+
+<h1>Welcome to Prem Site!</h1>
+
+<img th:src="${picture}" width="100">
+
+<h2 th:text="${name}"></h2>
+
+<p th:text="${email}"></p>
+
+<a href="/logout">Logout</a>
+
+</body>
+</html>

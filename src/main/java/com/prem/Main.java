@@ -1,4 +1,3 @@
-
 package com.prem;
 
 import org.springframework.boot.SpringApplication;
@@ -11,4 +10,3 @@ public class Main {
         SpringApplication.run(Main.class, args);
     }
 }
-

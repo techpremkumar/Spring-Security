@@ -30,6 +30,13 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
+
+        // Google authentication uses email
+        if ("GOOGLE".equals(user.getProvider())) {
+            return user.getEmail();
+        }
+
+        // Local authentication uses username
         return user.getUsername();
     }
 
